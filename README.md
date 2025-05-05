@@ -1,20 +1,22 @@
-# hOUPSh dataset
+# LLM-Generated Text Detection
 
-This directory contains the result of the annotations organized during the hOUPsh workshop of the [French TALN - 2023 conference](https://coria-taln-2023.sciencesconf.org/).  
+This repository contains the code and data for our project on distinguishing human-written from LLM-generated text using a lightweight, parameter-efficient adaptation of XLM-RoBERTa (LoRA) plus a simple classifier.
 
+## Overview
 
-# Data description
+We conducted four experimental phases:
 
-The dataset is contained in `hOUPSh-v1.csv` file. 
+1. **Phase 1 – Representation Comparison**  
+   – TF-IDF (1–2 grams) + Logistic Regression  
+   – Frozen XLM-RoBERTa CLS embeddings + Logistic Regression  
 
-## Columns description
-- `ID` : (int) the ID of the item
-- `SUB_ID` : (int) : the id of the sub item. It is either `1` or `2` given the fact that one item (question) provides two subitems (answers from human or chatgpt). 
-- `Question` : (str) : the question that was asked on Quora
-- `Answer` : (str) : the answer to the question, can be either provided by a human or by chatGPT
-- `Label` : (str) `human` | `chatgpt` : whether the anwser came from a human or chatgpt
-- `Annotations` : (str) : the human annotations of the item. Each annotator is identified by an ID, annotators are separated by `|`
-    - For example : `annot-4=human` indicates that the annotator (which ID is `annot-4`) marked the answer as `human`
-- `Split` : (str) `one-answer` | `two-answers` : wether only one answer or the two answers (human and chatgpt)  were shown to the annotators.
-- `Domain` : (str) `programer` | `hardware` : the domain from which the item was drawn.
-- `Source` : (str) : URL of the item in Quora if any else `None`
+2. **Phase 2 – LoRA Adaptation**  
+   a) End-to-end LoRA fine-tuning (softmax head) on 10 % subset  
+   b) Extract fused LoRA CLS embeddings → train Logistic Regression on large hold-out  
+
+3. **Phase 3 – Classifier Selection**  
+   – Compare Logistic Regression, XGBoost, Linear SVM, Random Forest on LoRA embeddings  
+
+4. **Phase 4 – Final Evaluation**  
+   – Stratified 5-fold CV of the chosen pipeline (LoRA + Logistic Regression)  
+   – Report Accuracy, F1-score, ROC-AUC stability and calibration  
